@@ -33,7 +33,7 @@ from data_processing import Data_Processing
 class Pick_Learner:
   def __init__(self, data = 'tmcs_2020_2029_clean.csv'):
     self.models = [
-                   LinearRegression(), KNeighborsRegressor(), DecisionTreeRegressor(), Ridge(), LassoLars(), MultiTaskLasso(), BayesianRidge(),
+                   LinearRegression(), KNeighborsRegressor(), DecisionTreeRegressor(), Ridge(), LassoLars(), MultiTaskLasso(), MultiOutputRegressor(BayesianRidge()),
                    MultiOutputRegressor(LinearRegression()), MultiOutputRegressor(BayesianRidge()), Ridge(), LassoLars(),
                    MultiTaskLasso(), MultiTaskElasticNet(),
                    MultiOutputRegressor(SGDRegressor()), MultiOutputRegressor(PassiveAggressiveRegressor()), MultiOutputRegressor(HuberRegressor()),
