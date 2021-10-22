@@ -15,7 +15,7 @@ from sklearn.utils import shuffle
 from util import Util
 
 class Data_Processing:
-  def __init__(self, data = 'tmcs_2020_2029.csv', lanes = 'tmcs_2020_2029_lanes.csv', final_data = 'tmcs_2020_2029_clean.csv'):
+  def __init__(self, data = 'tmcs_2020_2029.csv', lanes = 'tmcs_2020_2029_lanes.csv', final_data = 'tmcs_2020_2029_clean.csv', final_data_end_to_end = 'tmcs_2020_2029_end_to_end.csv', end_to_end = False):
     self.row_dict = {
       'location_id': 0,
       'year': 0,
@@ -49,14 +49,35 @@ class Data_Processing:
       'wb_l': 0
     }
 
+    self.row_dict_end_to_end = {
+        'year': 0,
+        'month': 0,
+        'day': 0,
+        'time_start_hour': 0,
+        'time_start_min': 0,
+        'time_end_hour': 0,
+        'time_end_min': 0,
+        'is_weekend': 0,
+        'is_holiday': 0,
+        'start': '',
+        'end': ''
+    }
+
     self.data_folder = '../Data/'
 
     self.data_list = []
+    self.data_list_end_to_end = []
+    self.starts_ends_list = []
+
     self.final_data = final_data
     self.final_data_path = self.data_folder + final_data
+    self.final_data_end_to_end = final_data_end_to_end
+    self.final_data_path_end_to_end = self.data_folder + final_data_end_to_end
 
     self.data = pd.read_csv(self.data_folder + data)
     self.lanes = pd.read_csv(self.data_folder + lanes, index_col = 0)
+
+    self.util = Util()
 
     if not (os.path.isfile(self.final_data_path)):
       self.combine_data()
@@ -65,19 +86,23 @@ class Data_Processing:
 
       print('Data has been modified, cleaned and saved for learning. Augmented learning data can be found at: ' + self.final_data_path)
 
+    if (end_to_end):
+      self.clean_data_end_to_end()
+      self.save_data(end_to_end = True)
+
   def view_data(self, n = 5, view_type = ''):
-    if(view_type == 'columns_original'):
+    if (view_type == 'columns_original'):
       print(self.data.columns)
-    elif(view_type == 'data_original'):
+    elif (view_type == 'data_original'):
       print(self.data.head(n))
-    elif(view_type == 'lanes'):
+    elif (view_type == 'lanes'):
       print(self.lanes.head(n))
-    elif(view_type == 'lanes_columns'):
+    elif (view_type == 'lanes_columns'):
       print(self.lanes.column)
-    elif(view_type == 'lanes_cleaned'):
+    elif (view_type == 'lanes_cleaned'):
       final_data = pd.read_csv(self.final_data_path)
       print(self.final_data.columns)
-    elif(view_type == 'data_cleaned'):
+    elif (view_type == 'data_cleaned'):
       pfinal_data = pd.read_csv(self.final_data_path)
       print(self.final_data.head(n))
     else:
@@ -90,8 +115,7 @@ class Data_Processing:
     return self.lanes.loc[intersection]['lanes']
 
   def get_oneway(self, intersection):
-    if (np.isnan(self.lanes.loc[intersection]['one_way'])):
-      return 0
+    if (np.isnan(self.lanes.loc[intersection]['one_way'])): return 0
     else: return 1
 
 
@@ -104,7 +128,7 @@ class Data_Processing:
 
     for id in data.location_id:
       lanes_col.append(lanes.loc[id].lanes)
-      if(np.isnan(lanes.loc[id].one_way)):
+      if (np.isnan(lanes.loc[id].one_way)):
         oneway_col.append(False)
       else:
         oneway_col.append(True)
@@ -119,7 +143,7 @@ class Data_Processing:
     data_list = self.data_list
     row_dict = self.row_dict
 
-    util = Util()
+    util = self.util
 
     for index, row in data.iterrows():
       row_dict['location_id'] = row['location_id']
@@ -156,9 +180,13 @@ class Data_Processing:
 
     self.data_list = data_list
 
-  def save_data(self):
-    finalData = pd.DataFrame(self.data_list)
-    finalData.to_csv(self.final_data_path, index = False)
+  def save_data(self, end_to_end = False):
+    if(end_to_end):
+      finalData = pd.DataFrame(self.data_list_end_to_end)
+      finalData.to_csv(self.final_data_path_end_to_end, index = False)
+    else:
+      finalData = pd.DataFrame(self.data_list)
+      finalData.to_csv(self.final_data_path, index = False)
 
   def clean_dataset(self, df):
     assert isinstance(df, pd.DataFrame), "df needs to be a pd.DataFrame"
@@ -189,6 +217,73 @@ class Data_Processing:
        'is_oneway', 'is_weekend', 'is_holiday', 'nx', 'sx', 'ex', 'ex']]
     y = data[['nb_r', 'nb_t', 'nb_l', 'sb_r', 'sb_t', 'sb_l', 'eb_r', 'eb_t', 'eb_l', 'wb_r', 'wb_t', 'wb_l']]
     return X, y
+
+  def clean_data_end_to_end(self):
+    data_list = self.data_list_end_to_end
+    starts_ends_list = self.starts_ends_list
+    row_dict = self.row_dict_end_to_end
+
+    util = self.util
+
+    data = pd.read_csv(self.final_data_path)
+
+    years = data['year'].unique()
+    months = data['month'].unique()
+    days = data['day'].unique()
+    start_hours = data['time_start_hour'].unique()
+    start_minutes = data['time_start_min'].unique()
+    start_minutes = np.delete(start_minutes, np.argwhere(start_minutes == 1))
+    end_hours = data['time_end_hour'].unique()
+    end_minutes = data['time_end_min'].unique()
+    end_minutes = np.delete(end_minutes, np.argwhere(end_minutes == 16))
+    intersections = list(self.get_intersections())
+
+    for start in intersections:
+        for end in intersections:
+            if (end != start):
+                starts_ends_list.append([start, end])
+
+    for year in years:
+        for month in months:
+            for day in days:
+                if (month == 2 and day > 29): continue
+                is_weekend = util.is_weekend(str(year) + '-' + str(month) + '-' + str(day))
+                is_holiday = util.is_holiday(str(year) + '-' + str(month) + '-' + str(day))
+                for start_hour in start_hours:
+                    for start_minute in start_minutes:
+                        end_time = util.increment_time(start_hour, start_minute)
+                        for i in range(len(starts_ends_list)):
+                            row_dict['year'] = year
+                            row_dict['month'] = month
+                            row_dict['day'] = day
+                            row_dict['time_start_hour'] = start_hour
+                            row_dict['time_start_min'] = start_minute
+                            row_dict['time_end_hour'] = end_time.hour
+                            row_dict['time_end_min'] = end_time.minute
+                            row_dict['is_weekend'] = is_weekend
+                            row_dict['is_holiday'] = is_holiday
+                            row_dict['start'] = start
+                            row_dict['end'] = end
+                            data_list.append(row_dict.copy())
+
+                for end_hour in end_hours:
+                    for end_minute in end_minutes:
+                        start_time = util.increment_time(end_hour, end_minute, increment_value = -15)
+                        for i in range(len(starts_ends_list)):
+                            row_dict['year'] = year
+                            row_dict['month'] = month
+                            row_dict['day'] = day
+                            row_dict['time_start_hour'] = start_time.hour
+                            row_dict['time_start_min'] = start_time.minute
+                            row_dict['time_end_hour'] = end_hour
+                            row_dict['time_end_min'] = end_minute
+                            row_dict['is_weekend'] = is_weekend
+                            row_dict['is_holiday'] = is_holiday
+                            row_dict['start'] = start
+                            row_dict['end'] = end
+                            data_list.append(row_dict.copy())
+
+    self.data_list_end_to_end = data_list
 
 if __name__ == '__main__':
   Data_Processing()

@@ -8,6 +8,7 @@ Description: This class has various utility functions required by other classes
 
 import os
 import holidays
+import datetime as dt
 from datetime import date, datetime
 
 class Util:
@@ -18,6 +19,9 @@ class Util:
     hour, minute, _ = time.split(' ')[1].split('-')[0].split(':')
     return float(hour), float(minute)
 
+  def increment_time(self, hour, minute, increment_value = 15):
+    return datetime.strptime(str(int(hour)) + ':' + str(int(minute)), '%H:%M') + dt.timedelta(minutes = increment_value)
+
   def get_time_range(self, time):
     # time in format -> hh:mm
     hh = int(time.split(':')[0])
@@ -26,11 +30,11 @@ class Util:
       start_minute = 0
       end_minute = 15
       end_hour = hh
-    elif(mm >= 15 and mm <= 30):
+    elif (mm >= 15 and mm <= 30):
       start_minute = 15
       end_minute = 30
       end_hour = hh
-    elif(mm >= 30 and mm <= 45):
+    elif (mm >= 30 and mm <= 45):
       start_minute = 30
       end_minute = 45
       end_hour = hh

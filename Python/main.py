@@ -20,13 +20,13 @@ from data_processing import Data_Processing
 class Main:
   def __init__(self, graph_name = 'test.csv', train = True):
     if train: 
-      self.create_folder()
+      self._create_folder()
       Data_Processing()
       Trainer(1)
       Trainer(2)
       print('Done Training')
 
-  def create_folder(self):
+  def _create_folder(self):
     if not os.path.exists('../Data'):
       os.makedirs('../Data')
     if not os.path.exists('../Model'):

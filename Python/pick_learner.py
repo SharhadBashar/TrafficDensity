@@ -17,7 +17,7 @@ from sklearn.model_selection import KFold
 from sklearn.metrics import accuracy_score
 
 from sklearn.multioutput import MultiOutputRegressor
-from sklearn.linear_model import LinearRegression, BayesianRidge, Ridge, LassoLars, MultiTaskLasso, MultiTaskElasticNet, LogisticRegression, SGDRegressor, PassiveAggressiveRegressor, HuberRegressor
+from sklearn.linear_model import LinearRegression, BayesianRidge, Ridge, LassoLars, MultiTaskLasso, MultiTaskElasticNet, LogisticRegression, SGDRegressor, PassiveAggressiveRegressor
 from sklearn.svm import SVR
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.neighbors import KNeighborsRegressor
@@ -36,7 +36,7 @@ class Pick_Learner:
                    LinearRegression(), KNeighborsRegressor(), DecisionTreeRegressor(), Ridge(), LassoLars(), MultiTaskLasso(), MultiOutputRegressor(BayesianRidge()),
                    MultiOutputRegressor(LinearRegression()), MultiOutputRegressor(BayesianRidge()), Ridge(), LassoLars(),
                    MultiTaskLasso(), MultiTaskElasticNet(),
-                   MultiOutputRegressor(SGDRegressor()), MultiOutputRegressor(PassiveAggressiveRegressor()), MultiOutputRegressor(HuberRegressor()),
+                   MultiOutputRegressor(SGDRegressor()), MultiOutputRegressor(PassiveAggressiveRegressor()),
                    RandomForestRegressor(n_estimators = 1000), ExtraTreesRegressor(n_estimators = 1000),
                    MultiOutputRegressor(AdaBoostRegressor()), MultiOutputRegressor(GradientBoostingRegressor())
                   ]
