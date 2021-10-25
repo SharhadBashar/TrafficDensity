@@ -38,7 +38,8 @@ class Pick_Learner:
                    MultiTaskLasso(), MultiTaskElasticNet(),
                    MultiOutputRegressor(SGDRegressor()), MultiOutputRegressor(PassiveAggressiveRegressor()),
                    RandomForestRegressor(n_estimators = 1000), ExtraTreesRegressor(n_estimators = 1000),
-                   MultiOutputRegressor(AdaBoostRegressor()), MultiOutputRegressor(GradientBoostingRegressor())
+                   MultiOutputRegressor(AdaBoostRegressor()), MultiOutputRegressor(GradientBoostingRegressor()),
+                   BaggingRegressor(base_estimator = RandomForestRegressor(n_estimators = 1000)), BaggingRegressor(base_estimator = ExtraTreesRegressor(n_estimators = 1000))
                   ]
     self.root_folder = '..'
     self.data_folder = self.root_folder + '/Data/'

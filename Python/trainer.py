@@ -87,6 +87,28 @@ class Trainer:
       output[intersection] = stage2
     return output
 
+  def predict_end_to_end(self, year, month, day, start_hour, start_minute, end_hour, end_minute, is_weekend, is_holiday):
+    DP = Data_Processing()
+    output = {}
+    intersections = map.keys()
+
+    model_stage1 = self.load_model(self.model_folder + stage1)
+    model_stage2 = self.load_model(self.model_folder + stage2)
+
+
+    for intersection in intersections:
+      stage1 = model_stage1.predict(pd.DataFrame({'location_id': intersection, 'year': year, 'month': month, 'day': day, 'time_start_hour': start_hour,
+                   'time_start_min': start_minute, 'time_end_hour': end_hour, 'time_end_min': end_minute, 'num_lanes': DP.get_lanes(intersection),
+                   'is_oneway': DP.get_oneway(intersection), 'is_weekend': int(is_weekend), 'is_holiday': int(is_holiday)}, index = [0]))
+
+      stage2 = model_stage2.predict(pd.DataFrame({'location_id': intersection, 'year': year, 'month': month, 'day': day, 'time_start_hour': start_hour,
+                   'time_start_min': start_minute, 'time_end_hour': end_hour, 'time_end_min': end_minute, 'num_lanes': DP.get_lanes(intersection),
+                   'is_oneway': DP.get_oneway(intersection), 'is_weekend': int(is_weekend), 'is_holiday': int(is_holiday),
+                   'nx': stage1[0][0], 'sx': stage1[0][1], 'ex': stage1[0][2], 'wx': stage1[0][1]}, index = [0]))
+
+      output[intersection] = stage2
+    return output
+
   def save_model(self, model, model_name = 'model.pkl'):
     joblib.dump(model, open(self.model_folder + model_name, 'wb'))
     print('Model saved at: ' + self.model_folder + model_name)

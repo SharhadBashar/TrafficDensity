@@ -13,7 +13,7 @@ from datetime import date, datetime
 
 class Util:
   def __init__(self):
-    pass
+    self.data_folder = '../Data/'
 
   def get_time(self, time):
     hour, minute, _ = time.split(' ')[1].split('-')[0].split(':')
@@ -54,3 +54,7 @@ class Util:
     for i in range(nav_up):
       os.chdir("..")
     return os.path.abspath(os.curdir)
+
+  def delete_graph(self, graph_name):
+    if os.path.exists(self.data_folder + graph_name):
+      os.remove(self.data_folder + graph_name)

@@ -13,6 +13,10 @@ import pandas as pd
 from sklearn.utils import shuffle
 
 from util import Util
+from graph import Graph
+from trainer import Trainer
+from shortest_path import Shortest_Path
+
 
 class Data_Processing:
   def __init__(self, data = 'tmcs_2020_2029.csv', lanes = 'tmcs_2020_2029_lanes.csv', final_data = 'tmcs_2020_2029_clean.csv', final_data_end_to_end = 'tmcs_2020_2029_end_to_end.csv', end_to_end = False):
@@ -65,9 +69,11 @@ class Data_Processing:
 
     self.data_folder = '../Data/'
 
+    self.longest_path = 0
     self.data_list = []
     self.data_list_end_to_end = []
     self.starts_ends_list = []
+    self.paths = []
 
     self.final_data = final_data
     self.final_data_path = self.data_folder + final_data
@@ -89,6 +95,8 @@ class Data_Processing:
     if (end_to_end):
       self.clean_data_end_to_end()
       self.save_data(end_to_end = True)
+      self.populate_end_to_end()
+
 
   def view_data(self, n = 5, view_type = ''):
     if (view_type == 'columns_original'):
@@ -284,6 +292,31 @@ class Data_Processing:
                             data_list.append(row_dict.copy())
 
     self.data_list_end_to_end = data_list
+
+  def _get_paths(self):
+    paths = self.paths
+    data_end_to_end = pd.read_csv(self.data_folder + self.final_data_end_to_end)
+    for index, row in data_end_to_end.iterrows():
+      graph_name = str(index) + '.csv'
+      output = Trainer(0).predict_end_to_end(row['year'], row['month'], row['day'], row['time_start_hour'], row['time_start_min'], row['time_end_hour'], row['time_end_min'], row['is_weekend'], row['is_holiday'])
+      Graph().create_graph(graph_name, output)
+      path = Shortest_Path(row['start'], row['end'], graph_name, draw).return_path()
+      if (len(path) > self.longest_path): self.longest_path = len(path)
+      paths.append(path)
+      Util.delete_graph(graph_name)
+    self.paths = path
+
+  def populate_end_to_end(self):
+    self._get_paths()
+    data_end_to_end = pd.read_csv(self.data_folder + self.final_data_end_to_end)
+    data_clean.join(pd.DataFrame(columns = list(range(1, self.longest_path + 1))))
+    for i, path in enumerate(self.paths):
+      for j in range(self.longest_path):
+        try:
+          data_end_to_end.at[i, j + 1] = path[j]
+        except:
+          data_end_to_end.at[i, j + 1] = 'pad'
+    data_end_to_end.to_csv(self.final_data_path_end_to_end, index = False)
 
 if __name__ == '__main__':
   Data_Processing()

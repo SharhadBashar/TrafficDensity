@@ -1,7 +1,7 @@
 '''
 Author: Sharhad Bashar
-Class: Main
-Description: Main class that calls all other classes. Creates data and model folders if required.
+Class: Main_End_To_End
+Description: Main class that calls all other classes for the end to end method. Creates data and model folders if required.
              Input: Date and Time, start and finish point
              Output: Complete Graph
 '''
@@ -21,7 +21,9 @@ class Main_End_To_End:
     if train:
       self._create_folder()
       Data_Processing(end_to_end = True)
-
+      Trainer(1)
+      Trainer(2)
+      print('Done Training')
 
   def _create_folder(self):
     if not os.path.exists('../Data'):
