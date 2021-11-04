@@ -17,9 +17,8 @@ from graph import Graph
 from trainer import Trainer
 from shortest_path import Shortest_Path
 
-
 class Data_Processing:
-  def __init__(self, data = 'tmcs_2020_2029.csv', lanes = 'tmcs_2020_2029_lanes.csv', final_data = 'tmcs_2020_2029_clean.csv', final_data_end_to_end = 'tmcs_2020_2029_end_to_end.csv', end_to_end = False):
+  def __init__(self, data = 'tmcs_2020_2029.csv', lanes = 'tmcs_2020_2029_lanes.csv', final_data = 'tmcs_2020_2029_clean.csv', final_data_end_to_end = 'tmcs_2020_2029_end_to_end.csv', end_to_end = True):
     self.row_dict = {
       'location_id': 0,
       'year': 0,
@@ -93,8 +92,8 @@ class Data_Processing:
       print('Data has been modified, cleaned and saved for learning. Augmented learning data can be found at: ' + self.final_data_path)
 
     if (end_to_end):
-      self.clean_data_end_to_end()
-      self.save_data(end_to_end = True)
+      # self.clean_data_end_to_end()
+      # self.save_data(end_to_end = True)
       self.populate_end_to_end()
 
 
@@ -115,17 +114,6 @@ class Data_Processing:
       print(self.final_data.head(n))
     else:
       print(self.data.head())
-
-  def get_intersections(self):
-    return self.lanes.index.values
-
-  def get_lanes(self, intersection):
-    return self.lanes.loc[intersection]['lanes']
-
-  def get_oneway(self, intersection):
-    if (np.isnan(self.lanes.loc[intersection]['one_way'])): return 0
-    else: return 1
-
 
   def combine_data(self):
     data = self.data
@@ -202,30 +190,7 @@ class Data_Processing:
     indices_to_keep = df.isin([np.nan, np.inf, -np.inf]).any(1)
     return df[indices_to_keep].astype(np.float64)
 
-  def get_training_data_stage1(self, path):
-    data = shuffle(pd.read_csv(path + self.final_data))
-    data["is_oneway"] = data["is_oneway"].astype(int)
-    data["is_weekend"] = data["is_weekend"].astype(int)
-    data["is_holiday"] = data["is_holiday"].astype(int)
-    # data = self.clean_dataset(data)
-    X = data[['location_id', 'year', 'month', 'day', 'time_start_hour',
-       'time_start_min', 'time_end_hour', 'time_end_min', 'num_lanes',
-       'is_oneway', 'is_weekend', 'is_holiday']]
-    y = data[['nx', 'sx', 'ex', 'wx']]
-    return X, y
-
-  def get_training_data_stage2(self, path):
-    data = shuffle(pd.read_csv(path + self.final_data))
-    data["is_oneway"] = data["is_oneway"].astype(int)
-    data["is_weekend"] = data["is_weekend"].astype(int)
-    data["is_holiday"] = data["is_holiday"].astype(int)
-    # data = self.clean_dataset(data)
-    X = data[['location_id', 'year', 'month', 'day', 'time_start_hour',
-       'time_start_min', 'time_end_hour', 'time_end_min', 'num_lanes',
-       'is_oneway', 'is_weekend', 'is_holiday', 'nx', 'sx', 'ex', 'ex']]
-    y = data[['nb_r', 'nb_t', 'nb_l', 'sb_r', 'sb_t', 'sb_l', 'eb_r', 'eb_t', 'eb_l', 'wb_r', 'wb_t', 'wb_l']]
-    return X, y
-
+  
   def clean_data_end_to_end(self):
     data_list = self.data_list_end_to_end
     starts_ends_list = self.starts_ends_list
@@ -244,7 +209,7 @@ class Data_Processing:
     end_hours = data['time_end_hour'].unique()
     end_minutes = data['time_end_min'].unique()
     end_minutes = np.delete(end_minutes, np.argwhere(end_minutes == 16))
-    intersections = list(self.get_intersections())
+    intersections = list(Util().get_intersections())
 
     for start in intersections:
         for end in intersections:
@@ -260,7 +225,7 @@ class Data_Processing:
                 for start_hour in start_hours:
                     for start_minute in start_minutes:
                         end_time = util.increment_time(start_hour, start_minute)
-                        for i in range(len(starts_ends_list)):
+                        for start, end in starts_ends_list:
                             row_dict['year'] = year
                             row_dict['month'] = month
                             row_dict['day'] = day
@@ -277,7 +242,7 @@ class Data_Processing:
                 for end_hour in end_hours:
                     for end_minute in end_minutes:
                         start_time = util.increment_time(end_hour, end_minute, increment_value = -15)
-                        for i in range(len(starts_ends_list)):
+                        for start, end in starts_ends_list:
                             row_dict['year'] = year
                             row_dict['month'] = month
                             row_dict['day'] = day
@@ -294,16 +259,18 @@ class Data_Processing:
     self.data_list_end_to_end = data_list
 
   def _get_paths(self):
+    # print(self.data_folder + self.final_data_end_to_end)
     paths = self.paths
     data_end_to_end = pd.read_csv(self.data_folder + self.final_data_end_to_end)
     for index, row in data_end_to_end.iterrows():
       graph_name = str(index) + '.csv'
       output = Trainer(0).predict_end_to_end(row['year'], row['month'], row['day'], row['time_start_hour'], row['time_start_min'], row['time_end_hour'], row['time_end_min'], row['is_weekend'], row['is_holiday'])
       Graph().create_graph(graph_name, output)
-      path = Shortest_Path(row['start'], row['end'], graph_name, draw).return_path()
+      path = Shortest_Path(row['start'], row['end'], graph_name).return_path()
       if (len(path) > self.longest_path): self.longest_path = len(path)
       paths.append(path)
-      Util.delete_graph(graph_name)
+      self.util.delete_graph(graph_name)
+      if (index % 1000 == 0): print(index, 'of', len(data_end_to_end), 'done')
     self.paths = path
 
   def populate_end_to_end(self):

@@ -89,7 +89,7 @@ class Graph:
           graph.loc[intersection][str(map[intersection]['W'][0])] = (pred[10] + pred[2] + pred[3]) / map[intersection]['W'][1]
 
     self.save_graph(graph, graph_name)
-    print('Graph created and saved at: ' + self.data_folder + graph_name)
+    # print('Graph created and saved at: ' + self.data_folder + graph_name)
 
 
 if __name__ == 'main':
