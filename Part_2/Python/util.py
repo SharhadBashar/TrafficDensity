@@ -14,7 +14,7 @@ import datetime as dt
 from datetime import date, datetime
 
 class Util:
-  def __init__(self, lanes = 'tmcs_2020_2029_lanes.csv', final_data = 'tmcs_2020_2029_clean.csv'):
+  def __init__(self, lanes = 'tmcs_2020_2029_lanes.csv', final_data = 'tmcs_2020_2029_clean.csv', final_data_end_to_end = 'tmcs_2020_2029_end_to_end.csv'):
     self.data_folder = '../Data/'
     self.lanes = pd.read_csv(self.data_folder + lanes, index_col = 0)
     self.final_data = final_data
@@ -94,4 +94,32 @@ class Util:
        'is_oneway', 'is_weekend', 'is_holiday', 'nx', 'sx', 'ex', 'ex']]
     y = data[['nb_r', 'nb_t', 'nb_l', 'sb_r', 'sb_t', 'sb_l', 'eb_r', 'eb_t', 'eb_l', 'wb_r', 'wb_t', 'wb_l']]
     return X, y
+
+  def get_training_data_end_to_end(self, path):
+    data = shuffle(pd.read_csv(path + self.final_data_end_to_end))
+    data["is_weekend"] = data["is_weekend"].astype(int)
+    data["is_holiday"] = data["is_holiday"].astype(int)
+    X = data[['year', 'month', 'day', 'time_start_hour',
+       'time_start_min', 'time_end_hour', 'time_end_min',
+       'is_weekend', 'is_holiday']]
+    y = data[['path']]
+    return X, y
+
+  def calc_accuracy(self, actual, pred):
+    if (len(pred) == 0 or pred[0] != actual[0] or len(pred) > len(actual)):
+      return 0
+    if (pred == actual):
+      return 1
+    match = 0
+    for i in range(len(pred)):
+      if (pred[i] == actual[i]):
+        match += 1
+    return match/len(actual)
+
+
+
+
+
+
+
 

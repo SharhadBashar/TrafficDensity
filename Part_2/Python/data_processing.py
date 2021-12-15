@@ -264,7 +264,7 @@ class Data_Processing:
     data_end_to_end = pd.read_csv(self.data_folder + self.final_data_end_to_end)
     for index, row in data_end_to_end.iterrows():
       graph_name = str(index) + '.csv'
-      output = Trainer(0).predict_end_to_end(row['year'], row['month'], row['day'], row['time_start_hour'], row['time_start_min'], row['time_end_hour'], row['time_end_min'], row['is_weekend'], row['is_holiday'])
+      output = Trainer(0)._predict_end_to_end(row['year'], row['month'], row['day'], row['time_start_hour'], row['time_start_min'], row['time_end_hour'], row['time_end_min'], row['is_weekend'], row['is_holiday'])
       Graph().create_graph(graph_name, output)
       path = Shortest_Path(row['start'], row['end'], graph_name).return_path()
       if (len(path) > self.longest_path): self.longest_path = len(path)

@@ -32,6 +32,7 @@ class Trainer:
     # self.model_stage1 = BaggingRegressor(base_estimator = RandomForestRegressor(n_estimators = 1000))
     self.model_stage1 = RandomForestRegressor(n_estimators = 1000)
     self.model_stage2 = ExtraTreesRegressor(n_estimators = 1000)
+    self.model_end_to_end = ExtraTreesRegressor(n_estimators = 1000)
 
     if not ((os.path.isfile(self.model_folder + 'stage1.pkl')) and (os.path.isfile(self.model_folder + 'stage2.pkl'))):
       if (stage == 1):
@@ -42,6 +43,10 @@ class Trainer:
       	self.trained_stage2 = self.learning_stage2()
       	# self.save_model(self.trained_stage2, 'stage2' + datetime.datetime.now() + '.pkl')
       	self.save_model(self.trained_stage2, 'stage2.pkl')
+      elif (stage == 'end_to_end'):
+        self.trained_stage_end_to_end = self.learning_end_to_end()
+        # self.save_model(self.trained_stage2, 'stage2' + datetime.datetime.now() + '.pkl')
+        self.save_model(self.trained_stage_end_to_end, 'stage_end_to_end.pkl')
 
   def learning_stage1(self):
     print('Starting stage 1 training')
@@ -58,6 +63,14 @@ class Trainer:
     model_stage2.fit(X, y)
     print('Done Stage 2 training')
     return model_stage2
+
+  def learning_end_to_end(self):
+    print('Starting end to end training')
+    X, y = self.util.get_training_data_end_to_end(self.data_folder)
+    model_end_to_end = self.model_end_to_end
+    model_end_to_end.fit(X, y)
+    print('Done end to end training')
+    return model_end_to_end
 
   def predict(self, date, time, stage1 = 'stage1.pkl', stage2 = 'stage2.pkl'):
     util = self.util
@@ -85,7 +98,7 @@ class Trainer:
       output[intersection] = stage2
     return output
 
-  def predict_end_to_end(self, year, month, day, start_hour, start_minute, end_hour, end_minute, is_weekend, is_holiday, stage1 = 'stage1.pkl', stage2 = 'stage2.pkl'):
+  def _predict_end_to_end(self, year, month, day, start_hour, start_minute, end_hour, end_minute, is_weekend, is_holiday, stage1 = 'stage1.pkl', stage2 = 'stage2.pkl'):
     util = self.util
     output = {}
     intersections = map.keys()
@@ -106,6 +119,17 @@ class Trainer:
 
       output[intersection] = stage2
     return output
+
+  def predict_end_to_end(self, start, end, date, time, model = 'stage_end_to_end.pkl'):
+    util = self.util
+
+    year, month, day = date.split('-')
+    start_hour, start_minute, end_hour, end_minute = util.get_time_range(time)
+    is_weekend = util.is_weekend(date)
+    is_holiday = util.is_holiday(date)
+
+    model = self.load_model(self.model_folder + model)
+    return model.predict(year, month, day, start_hour, start_minute, end_hour, end_minute, is_weekend, is_holiday, start, end)
 
   def save_model(self, model, model_name = 'model.pkl'):
     joblib.dump(model, open(self.model_folder + model_name, 'wb'))
