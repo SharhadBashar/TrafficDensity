@@ -270,7 +270,10 @@ class Data_Processing:
       if (len(path) > self.longest_path): self.longest_path = len(path)
       paths.append(path)
       self.util.delete_graph(graph_name)
-      if (index % 1000 == 0): print(index, 'of', len(data_end_to_end), 'done')
+      if (index % 1000 == 0):
+        print(index, 'of', len(data_end_to_end), 'done')
+        np.save('temp_paths.npy', paths)
+
     self.paths = path
 
   def populate_end_to_end(self):
