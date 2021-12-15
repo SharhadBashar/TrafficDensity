@@ -12,7 +12,7 @@ import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
 
-from data_processing import Data_Processing
+from util import Util
 
 class Shortest_Path:
 	def __init__(self, A, B, graph_name, draw = False):
@@ -91,7 +91,7 @@ class Shortest_Path:
 		plt.show()
 
 	def path(self, G, A, B):
-		intersections = Data_Processing().get_intersections()
+		intersections = Util().get_intersections()
 		if (A not in intersections):
 			print('Start not found')
 			return
@@ -100,5 +100,6 @@ class Shortest_Path:
 			return
 		return nx.shortest_path(G, source = A, target = B, weight = 'weight', method = 'dijkstra')
 
-if __name__ == 'main':
-	Shortest_Path('test.csv', 13060, 41218)
+if __name__ == '__main__':
+	print('here')
+	Shortest_Path(13060, 41218, 'test.csv', ).return_path()
