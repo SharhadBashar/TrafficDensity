@@ -21,8 +21,8 @@ class Main_End_To_End:
     if train:
       self._create_folder()
       Data_Processing(end_to_end = True)
-      Trainer(1)
-      Trainer(2)
+      # Trainer(1)
+      # Trainer(2)
       print('Done Training')
 
   def _create_folder(self):

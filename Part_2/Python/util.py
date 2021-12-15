@@ -8,12 +8,16 @@ Description: This class has various utility functions required by other classes
 
 import os
 import holidays
+import numpy as np
+import pandas as pd
 import datetime as dt
 from datetime import date, datetime
 
 class Util:
-  def __init__(self):
+  def __init__(self, lanes = 'tmcs_2020_2029_lanes.csv', final_data = 'tmcs_2020_2029_clean.csv'):
     self.data_folder = '../Data/'
+    self.lanes = pd.read_csv(self.data_folder + lanes, index_col = 0)
+    self.final_data = final_data
 
   def get_time(self, time):
     hour, minute, _ = time.split(' ')[1].split('-')[0].split(':')
@@ -58,3 +62,36 @@ class Util:
   def delete_graph(self, graph_name):
     if os.path.exists(self.data_folder + graph_name):
       os.remove(self.data_folder + graph_name)
+
+  def get_intersections(self):
+    return self.lanes.index.values
+
+  def get_lanes(self, intersection):
+    return self.lanes.loc[intersection]['lanes']
+
+  def get_oneway(self, intersection):
+    if (np.isnan(self.lanes.loc[intersection]['one_way'])): return 0
+    else: return 1
+
+  def get_training_data_stage1(self, path):
+    data = shuffle(pd.read_csv(path + self.final_data))
+    data["is_oneway"] = data["is_oneway"].astype(int)
+    data["is_weekend"] = data["is_weekend"].astype(int)
+    data["is_holiday"] = data["is_holiday"].astype(int)
+    X = data[['location_id', 'year', 'month', 'day', 'time_start_hour',
+       'time_start_min', 'time_end_hour', 'time_end_min', 'num_lanes',
+       'is_oneway', 'is_weekend', 'is_holiday']]
+    y = data[['nx', 'sx', 'ex', 'wx']]
+    return X, y
+
+  def get_training_data_stage2(self, path):
+    data = shuffle(pd.read_csv(path + self.final_data))
+    data["is_oneway"] = data["is_oneway"].astype(int)
+    data["is_weekend"] = data["is_weekend"].astype(int)
+    data["is_holiday"] = data["is_holiday"].astype(int)
+    X = data[['location_id', 'year', 'month', 'day', 'time_start_hour',
+       'time_start_min', 'time_end_hour', 'time_end_min', 'num_lanes',
+       'is_oneway', 'is_weekend', 'is_holiday', 'nx', 'sx', 'ex', 'ex']]
+    y = data[['nb_r', 'nb_t', 'nb_l', 'sb_r', 'sb_t', 'sb_l', 'eb_r', 'eb_t', 'eb_l', 'wb_r', 'wb_t', 'wb_l']]
+    return X, y
+

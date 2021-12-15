@@ -12,7 +12,7 @@ import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
 
-from data_processing import Data_Processing
+from util import Util
 
 class Shortest_Path:
 	def __init__(self, A, B, graph_name, draw = False):
@@ -91,7 +91,7 @@ class Shortest_Path:
 		plt.show()
 
 	def path(self, G, A, B):
-		intersections = Data_Processing().get_intersections()
+		intersections = Util().get_intersections()
 		if (A not in intersections):
 			print('Start not found')
 			return

@@ -47,7 +47,7 @@ class Main:
     return Get_Time(path, graph_name, has_density)
 
 # This will train it
-Main()
+# Main()
 
 # This will make a prediction for a date and time
 Main(train = False).predict('2020-01-24', '23:12')
@@ -64,7 +64,7 @@ print('Without knowing density:')
 print('Time taken:', Main(train = False).get_time(path_0).travel_time(path_0), 'hours')
 print('')
 # This will give the shortest path from A to B with traffic density values
-path_1 = Main(train = False).get_path(13060, 4563, draw = True)
+path_1 = Main(train = False).get_path(13060, 4563, draw = False)
 print('With density:')
 print(path_1)
 print('Time taken:', Main(train = False).get_time(path_1).travel_time(path_1), 'hours')

@@ -60,7 +60,6 @@ class Trainer:
     return model_stage2
 
   def predict(self, date, time, stage1 = 'stage1.pkl', stage2 = 'stage2.pkl'):
-    # intersections = Data_Processing().get_intersections()
     util = self.util
     output = {}
     intersections = map.keys()
