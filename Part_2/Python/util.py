@@ -114,6 +114,7 @@ class Util:
     for i in range(len(pred)):
       if (pred[i] == actual[i]):
         match += 1
+      else: break
     return match/len(actual)
 
 
