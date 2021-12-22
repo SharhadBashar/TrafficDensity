@@ -94,3 +94,19 @@ class Util:
        'is_oneway', 'is_weekend', 'is_holiday', 'nx', 'sx', 'ex', 'ex']]
     y = data[['nb_r', 'nb_t', 'nb_l', 'sb_r', 'sb_t', 'sb_l', 'eb_r', 'eb_t', 'eb_l', 'wb_r', 'wb_t', 'wb_l']]
     return X, y
+
+  def _get_intersections(self, intersection):
+    intersections = []
+    if (intersection['N'] != []): intersections.append(intersection['N'][0])
+    if (intersection['E'] != []): intersections.append(intersection['E'][0])
+    if (intersection['S'] != []): intersections.append(intersection['S'][0])
+    if (intersection['W'] != []): intersections.append(intersection['W'][0])
+    return intersections
+
+  def valid_path(self, path):
+    for i in range(len(path) - 1):
+      current_intersection = path[i]
+      intersections = self._get_intersections(map[current_intersection])
+      next_intersection = path[i + 1]
+      if (next_intersection not in intersections): return False
+    return True

@@ -47,7 +47,7 @@ class Main:
     return Get_Time(path, graph_name, has_density)
 
 # This will train it
-Main()
+# Main()
 
 # This will make a prediction for a date and time
 Main(train = False).predict('2020-01-24', '23:12')

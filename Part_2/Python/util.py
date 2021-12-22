@@ -13,6 +13,8 @@ import pandas as pd
 import datetime as dt
 from datetime import date, datetime
 
+from map import map
+
 class Util:
   def __init__(self, lanes = 'tmcs_2020_2029_lanes.csv', final_data = 'tmcs_2020_2029_clean.csv', final_data_end_to_end = 'tmcs_2020_2029_end_to_end.csv'):
     self.data_folder = '../Data/'
@@ -104,6 +106,22 @@ class Util:
        'is_weekend', 'is_holiday']]
     y = data[['path']]
     return X, y
+
+  def _get_intersections(self, intersection):
+    intersections = []
+    if (intersection['N'] != []): intersections.append(intersection['N'][0])
+    if (intersection['E'] != []): intersections.append(intersection['E'][0])
+    if (intersection['S'] != []): intersections.append(intersection['S'][0])
+    if (intersection['W'] != []): intersections.append(intersection['W'][0])
+    return intersections
+
+  def valid_path(self, path):
+    for i in range(len(path) - 1):
+      current_intersection = path[i]
+      intersections = self._get_intersections(map[current_intersection])
+      next_intersection = path[i + 1]
+      if (next_intersection not in intersections): return False
+    return True
 
   def calc_accuracy(self, actual, pred):
     if (len(pred) == 0 or pred[0] != actual[0] or len(pred) > len(actual)):
