@@ -14,6 +14,7 @@ import datetime as dt
 from datetime import date, datetime
 
 from map import map
+from get_time import Get_Time
 
 class Util:
   def __init__(self, lanes = 'tmcs_2020_2029_lanes.csv', final_data = 'tmcs_2020_2029_clean.csv', final_data_end_to_end = 'tmcs_2020_2029_end_to_end.csv'):
@@ -124,7 +125,7 @@ class Util:
     return True
 
   def calc_accuracy(self, actual, pred):
-    if (len(pred) == 0 or pred[0] != actual[0] or len(pred) > len(actual)):
+    if (len(pred) == 0 or pred[0] != actual[0] or len(pred) > len(actual) or  not self.valid_path(pred)):
       return 0
     if (pred == actual):
       return 1
@@ -134,6 +135,84 @@ class Util:
         match += 1
       else: break
     return match/len(actual)
+
+  def report(self, actual, pred):
+    '''
+    valid path means all intersections are in a correct order
+    correct path means a valid path connecting start to end
+
+    pred_len_0 -> len of prediction is 0
+    wrong_start_point -> prediction has the wrong start point
+    pred_not_valid -> prediction is not a valid path (2 intersections that are not connected come after one another)
+    pred_same_actual -> prediction is the same as actual
+    pred_correct_different -> prediction is a correct valid path, but shorter than or equal to actual
+    pred_correct_longer -> prediction is a correct valid path, but longer than actual
+    pred_valid_wrong_end -> prediction is a valid path or length shorter or equal to actual, but has the wrong end point
+    pred_valid_longer_wrong_end -> prediction is a valid path, but longer than actual and has the wrong end point
+    '''
+
+    pred_len_0 = 0
+    wrong_start_point = 0
+    pred_not_valid = 0
+    pred_same_actual = 0
+    pred_correct_different, pred_correct_different_time, pred_correct_different_distance = 0, [], []
+    pred_correct_longer, pred_correct_longer_time, pred_correct_longer_distance = 0, [], []
+    pred_valid_wrong_end, pred_valid_wrong_end_match = 0, []
+    pred_valid_longer_wrong_end = 0
+
+    for i in range(len(pred)):
+      if (len(pred)) == 0:
+        pred_len_0 += 1
+        continue
+
+      if (actual[0] != pred[0]):
+        wrong_start_point += 1
+        continue
+
+      if (not self.valid_path(pred)):
+        pred_not_valid += 1
+        continue
+
+      if (actual == pred):
+        pred_same_actual += 1
+        continue
+
+      if (self.valid_path(pred) and pred[-1] == actual[-1] and len(pred) <= len(actual)):
+        pred_correct_different += 1
+        pred_correct_different_time.append(Get_Time(pred).travel_time(pred) - Get_Time(actual).travel_time(actual))
+        continue
+
+      if (self.valid_path(pred) and pred[-1] == actual[-1] and len(pred) > len(actual)):
+        pred_correct_longer += 1
+        pred_correct_longer_time.append(Get_Time(pred).travel_time(pred) - Get_Time(actual).travel_time(actual))
+        pred_correct_longer_distance.append(len(pred) - len(actual))
+        continue
+
+      if (self.valid_path(pred) and len(pred) <= len(actual) and pred[-1] != actual[-1]):
+        pred_valid_wrong_end += 1
+        match = 0
+        for i in range(len(pred)):
+          if (pred[i] == actual[i]):
+            match += 1
+          else: break
+        pred_valid_wrong_end_match.append(match / len(actual))
+        continue
+
+      if (self.valid_path(pred) and len(pred) > len(actual) and pred[-1] != actual[-1]):
+        pred_valid_longer_wrong_end += 1
+
+    print('Total test cases:', len(pred))
+    print('Length of prediction is 0 for {} cases'.format(pred_len_0))
+    print('Start point is not the same for {} cases'.format(wrong_start_point))
+    print('Prediction is not a valid path for {} cases'.format(pred_not_valid))
+    print('Prediction is the same as actual for {} cases'.format(pred_same_actual))
+    print('Prediction is a correct valid path, but not the same as actual (shorter or equal length) for {} cases. Average travel time is {}s more than actual'.format(pred_correct_different, mean(pred_correct_different_time)))
+    print('Prediction is a correct valid path, but longer than actual for {} cases. Average travel time is {}s more than actual. Average travel distance is {}km more than actual'.format(pred_correct_longer, mean(pred_correct_longer_time), mean(pred_correct_longer_distance)))
+    print('Prediction is a valid but incorrect (wrong end point) path for {} cases. Prediction matches {} % on average with actual'.format(pred_valid_wrong_end, mean(pred_valid_wrong_end_match) * 100))
+    print('Prediction is a valid but incorrect and longer path for {} cases'.format(pred_valid_longer_wrong_end))
+
+
+
 
 
 
