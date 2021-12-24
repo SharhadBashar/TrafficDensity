@@ -207,18 +207,7 @@ class Util:
     print('Start point is not the same for {} cases'.format(wrong_start_point))
     print('Prediction is not a valid path for {} cases'.format(pred_not_valid))
     print('Prediction is the same as actual for {} cases'.format(pred_same_actual))
-    print('Prediction is a correct valid path, but not the same as actual (shorter or equal length) for {} cases. Average travel time is {}s more than actual'.format(pred_correct_different, mean(pred_correct_different_time)))
-    print('Prediction is a correct valid path, but longer than actual for {} cases. Average travel time is {}s more than actual. Average travel distance is {}km more than actual'.format(pred_correct_longer, mean(pred_correct_longer_time), mean(pred_correct_longer_distance)))
+    print('Prediction is a correct valid path, but not the same as actual (shorter or equal length) for {} cases. Average travel time is {} s more than actual'.format(pred_correct_different, mean(pred_correct_different_time)))
+    print('Prediction is a correct valid path, but longer than actual for {} cases. Average travel time is {} s more than actual. Average travel distance is {} km more than actual'.format(pred_correct_longer, mean(pred_correct_longer_time), mean(pred_correct_longer_distance)))
     print('Prediction is a valid but incorrect (wrong end point) path for {} cases. Prediction matches {} % on average with actual'.format(pred_valid_wrong_end, mean(pred_valid_wrong_end_match) * 100))
     print('Prediction is a valid but incorrect and longer path for {} cases'.format(pred_valid_longer_wrong_end))
-
-
-
-
-
-
-
-
-
-
-
