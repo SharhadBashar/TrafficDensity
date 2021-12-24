@@ -11,6 +11,7 @@ import holidays
 import numpy as np
 import pandas as pd
 import datetime as dt
+from statistics import mean
 from datetime import date, datetime
 
 from map import map
